@@ -3,7 +3,9 @@ package io.github.lyndemberg.clientrss.services;
 import android.app.IntentService;
 import android.content.Intent;
 import android.support.annotation.Nullable;
+import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
+import android.util.Log;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -34,7 +36,7 @@ public class FeedService extends IntentService {
     protected void onHandleIntent(@Nullable Intent intent) {
         Feed parse = feedParser.parse();
         Date lastUpdated = parse.getLastUpdated();
-
+//
         if(lastUpdated != this.lastUpdated){
             //send intent to activity
             Intent intentExecuted = new Intent(ACTION_FEED);

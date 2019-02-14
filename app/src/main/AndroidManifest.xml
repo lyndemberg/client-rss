@@ -11,7 +11,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name="io.github.lyndemberg.clientrss.activities.MainActivity">
+        <activity android:name=".activities.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -20,13 +20,9 @@
         </activity>
 
         <service
-            android:name="io.github.lyndemberg.clientrss.services.FeedService"
-            android:exported="false"></service>
+            android:name=".services.FeedService"
+            android:exported="false" />
 
-        <receiver
-            android:name="io.github.lyndemberg.clientrss.receivers.MainReceiver"
-            android:enabled="true"
-            android:exported="true"></receiver>
     </application>
 
 </manifest>
