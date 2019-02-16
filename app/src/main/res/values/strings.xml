@@ -1,3 +1,7 @@
 <resources>
-    <string name="app_name">feed-rss-android</string>
+    <string name="app_name">Client RSS</string>
+
+    <!--for create notificationChannel if version android 26+-->
+    <string name="channel_id">client-rss-channel</string>
+    <string name="channel_name">client-rss-channel-id</string>
 </resources>
