@@ -8,12 +8,15 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.sqlite.SQLiteDatabase;
+import android.net.Uri;
 import android.os.Build;
 import android.os.SystemClock;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ListView;
 
 import java.util.ArrayList;
@@ -34,7 +37,7 @@ public class MainActivity extends AppCompatActivity {
     private MainReceiver receiver;
     private ListView listNews;
     private NoticesAdapter adapter;
-
+    private ArrayList<Notice> noticesList;
     private AlarmManager alarmManager;
     private PendingIntent pendingIntent;
     private static final int INTERVAL_ALARM = 30*1000;
@@ -46,17 +49,27 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        this.listNews = findViewById(R.id.listNews);
+        listNews = findViewById(R.id.listNews);
 
-        this.receiver = new MainReceiver() {
+        receiver = new MainReceiver() {
             @Override
             public void handleView(Intent intent) {
-                ArrayList<Notice> news  = (ArrayList<Notice>) intent.getSerializableExtra("newsList");
+                noticesList  = (ArrayList<Notice>) intent.getSerializableExtra("newsList");
                 adapter.clear();
-                adapter.addAll(news);
+                adapter.addAll(noticesList);
                 adapter.notifyDataSetChanged();
             }
         };
+
+        listNews.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                Notice selected = noticesList.get(i);
+                Log.d(TAG_MAIN_ACTIVITY, "selected: " +  selected.getLink());
+                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(selected.getLink().toString()));
+                startActivity(intent);
+            }
+        });
 
         //create channel if necessary for android API 26+
         createNotificationChannel();
@@ -71,13 +84,13 @@ public class MainActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
 
-        LocalBroadcastManager.getInstance(this).registerReceiver(receiver,new IntentFilter(MainReceiver.ACTION_FEED));
-
-        this.feedDb = new FeedDbHelper(this);
         //load notices cache in local database
-        ArrayList<Notice> noticesCacheDb = feedDb.getAllNotices();
-        adapter = new NoticesAdapter(this, noticesCacheDb);
+        feedDb = new FeedDbHelper(this);
+        noticesList = feedDb.getAllNotices();
+        adapter = new NoticesAdapter(this, noticesList);
         listNews.setAdapter(adapter);
+
+        LocalBroadcastManager.getInstance(this).registerReceiver(receiver,new IntentFilter(MainReceiver.ACTION_FEED));
     }
 
     @Override
