@@ -40,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
     private ArrayList<Notice> noticesList;
     private AlarmManager alarmManager;
     private PendingIntent pendingIntent;
-    private static final int INTERVAL_ALARM = 30*1000;
+    private static final int INTERVAL_ALARM = 300*1000;
 
     private FeedDbHelper feedDb;
 
