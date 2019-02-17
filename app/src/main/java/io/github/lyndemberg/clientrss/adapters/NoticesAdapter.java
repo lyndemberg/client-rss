@@ -36,4 +36,5 @@ public class NoticesAdapter extends ArrayAdapter<Notice> {
 
         return convertView;
     }
+
 }

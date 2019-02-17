@@ -45,15 +45,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         this.listNews = findViewById(R.id.listNews);
-
-        //load notices cache in local database
-        this.feedDb = new FeedDbHelper(this);
-        ArrayList<Notice> noticesCacheDb = feedDb.getAllNotices();
-        Log.d(TAG_MAIN_ACTIVITY,"noticesCacheDb size: "+noticesCacheDb.size());
-
-        adapter = new NoticesAdapter(this,noticesCacheDb);
-        listNews.setAdapter(adapter);
 
         this.receiver = new MainReceiver() {
             @Override
@@ -61,12 +54,13 @@ public class MainActivity extends AppCompatActivity {
                 ArrayList<Notice> news  = (ArrayList<Notice>) intent.getSerializableExtra("newsList");
                 adapter.clear();
                 adapter.addAll(news);
+                adapter.notifyDataSetChanged();
             }
         };
 
         //create channel if necessary for android API 26+
         createNotificationChannel();
-
+        //scheduling FeedService
         alarmManager = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
         Intent intent = new Intent(this, FeedService.class);
         pendingIntent = PendingIntent.getService(this,0,intent, PendingIntent.FLAG_IMMUTABLE);
@@ -76,20 +70,28 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        startService(new Intent(this,FeedService.class));
+
+        LocalBroadcastManager.getInstance(this).registerReceiver(receiver,new IntentFilter(MainReceiver.ACTION_FEED));
+
+        this.feedDb = new FeedDbHelper(this);
+        //load notices cache in local database
+        ArrayList<Notice> noticesCacheDb = feedDb.getAllNotices();
+        adapter = new NoticesAdapter(this, noticesCacheDb);
+        listNews.setAdapter(adapter);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        LocalBroadcastManager.getInstance(this).registerReceiver(receiver,new IntentFilter(MainReceiver.ACTION_FEED));
     }
 
     @Override
     protected void onStop() {
         super.onStop();
         LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver);
+        feedDb.close();
     }
+
 
     private void createNotificationChannel() {
         // Create the NotificationChannel, but only on API 26+ because
