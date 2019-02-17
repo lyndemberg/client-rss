@@ -7,15 +7,19 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Build;
 import android.os.SystemClock;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.ListView;
 
 import java.util.ArrayList;
 
+import io.github.lyndemberg.clientrss.database.FeedDbHelper;
+import io.github.lyndemberg.clientrss.database.NoticeSchema;
 import io.github.lyndemberg.clientrss.valueobject.Notice;
 import io.github.lyndemberg.clientrss.R;
 import io.github.lyndemberg.clientrss.adapters.NoticesAdapter;
@@ -26,6 +30,7 @@ import static android.app.PendingIntent.FLAG_UPDATE_CURRENT;
 
 public class MainActivity extends AppCompatActivity {
 
+    private static final String TAG_MAIN_ACTIVITY = "clientrss.MainActivity";
     private MainReceiver receiver;
     private ListView listNews;
     private NoticesAdapter adapter;
@@ -34,18 +39,28 @@ public class MainActivity extends AppCompatActivity {
     private PendingIntent pendingIntent;
     private static final int INTERVAL_ALARM = 30*1000;
 
+    private FeedDbHelper feedDb;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         this.listNews = findViewById(R.id.listNews);
 
+        //load notices cache in local database
+        this.feedDb = new FeedDbHelper(this);
+        ArrayList<Notice> noticesCacheDb = feedDb.getAllNotices();
+        Log.d(TAG_MAIN_ACTIVITY,"noticesCacheDb size: "+noticesCacheDb.size());
+
+        adapter = new NoticesAdapter(this,noticesCacheDb);
+        listNews.setAdapter(adapter);
+
         this.receiver = new MainReceiver() {
             @Override
             public void handleView(Intent intent) {
                 ArrayList<Notice> news  = (ArrayList<Notice>) intent.getSerializableExtra("newsList");
-                adapter = new NoticesAdapter(MainActivity.this, news);
-                listNews.setAdapter(adapter);
+                adapter.clear();
+                adapter.addAll(news);
             }
         };
 
@@ -54,7 +69,7 @@ public class MainActivity extends AppCompatActivity {
 
         alarmManager = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
         Intent intent = new Intent(this, FeedService.class);
-        pendingIntent = PendingIntent.getService(this,0,intent, PendingIntent.FLAG_ONE_SHOT);
+        pendingIntent = PendingIntent.getService(this,0,intent, PendingIntent.FLAG_IMMUTABLE);
         alarmManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime(),INTERVAL_ALARM, pendingIntent);
     }
 

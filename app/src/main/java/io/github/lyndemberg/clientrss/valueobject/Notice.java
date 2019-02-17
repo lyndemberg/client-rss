@@ -9,7 +9,7 @@ import java.util.Date;
 
 
 public class Notice implements Serializable {
-    private static DateFormat FORMATTER = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+    public static DateFormat FORMATTER = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
     private String author;
     private String title;
     private URL link;

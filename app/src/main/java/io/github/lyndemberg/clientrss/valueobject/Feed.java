@@ -9,7 +9,7 @@ import java.util.Date;
 import java.util.List;
 
 public class Feed implements Serializable {
-    private static DateFormat FORMATTER = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+    public static DateFormat FORMATTER = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
     private List<Notice> notices;
     private Date lastUpdated;
 
