@@ -89,7 +89,7 @@ public class FeedService extends IntentService {
 
             Log.d(TAG_FEED_SERVICE,"inserting new data in cache");
             //update local database
-            feedDb.clearFeed();
+            feedDb.clearTablesFeedAndNotices();
             feedDb.insertFeed(parse);
         }
     }

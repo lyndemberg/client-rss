@@ -19,7 +19,7 @@ import io.github.lyndemberg.clientrss.valueobject.Notice;
 public class FeedDbHelper extends SQLiteOpenHelper {
 
     public static final int DATABASE_VERSION = 3;
-    public static final String DATABASE_NAME = "Feed.db";
+    public static final String DATABASE_NAME = "client-rss.db";
 
     private static final String SQL_CREATE_FEED =
             "CREATE TABLE " + FeedSchema.TABLE_NAME + " ("+
@@ -34,11 +34,7 @@ public class FeedDbHelper extends SQLiteOpenHelper {
                     NoticeSchema.COLUMN_NAME_LINK + " TEXT," +
                     NoticeSchema.COLUMN_NAME_AUTHOR + " TEXT," +
                     NoticeSchema.COLUMN_NAME_TITLE + " TEXT," +
-                    NoticeSchema.COLUMN_NAME_FEED_ID +" DATE,"+
-                    NoticeSchema.COLUMN_NAME_PUBLISHED + " DATE," +
-                    "FOREIGN KEY ("+ NoticeSchema.COLUMN_NAME_FEED_ID + ")" +
-                        " REFERENCES " + FeedSchema.TABLE_NAME + "(" + FeedSchema.COLUMN_NAME_LAST_UPDATED + ")" +
-                            " ON DELETE CASCADE ON UPDATE CASCADE)";
+                    NoticeSchema.COLUMN_NAME_PUBLISHED + " DATE)";
 
     private static final String SQL_DROP_NOTICE =
             "DROP TABLE IF EXISTS " + NoticeSchema.TABLE_NAME;
@@ -70,7 +66,6 @@ public class FeedDbHelper extends SQLiteOpenHelper {
             writerDb.insert(FeedSchema.TABLE_NAME,null, values);
             values.clear();
             for(Notice n : feed.getNotices()){
-                values.put(NoticeSchema.COLUMN_NAME_FEED_ID, Feed.FORMATTER.format(feed.getLastUpdated()));
                 values.put(NoticeSchema.COLUMN_NAME_AUTHOR,n.getAuthor());
                 values.put(NoticeSchema.COLUMN_NAME_TITLE,n.getTitle());
                 values.put(NoticeSchema.COLUMN_NAME_LINK,n.getLink().toString());
@@ -84,9 +79,16 @@ public class FeedDbHelper extends SQLiteOpenHelper {
         }
     }
 
-    public void clearFeed(){
+    public void clearTablesFeedAndNotices(){
         SQLiteDatabase writerDb = getWritableDatabase();
-        writerDb.delete(FeedSchema.TABLE_NAME,null,null);
+        writerDb.beginTransaction();
+        try {
+            writerDb.delete(FeedSchema.TABLE_NAME,null,null);
+            writerDb.delete(NoticeSchema.TABLE_NAME,null,null);
+            writerDb.setTransactionSuccessful();
+        }finally {
+            writerDb.endTransaction();
+        }
     }
 
     public Date getLastUpdatedFeed(){
@@ -110,7 +112,6 @@ public class FeedDbHelper extends SQLiteOpenHelper {
                 NoticeSchema.COLUMN_NAME_LINK + "," +
                 NoticeSchema.COLUMN_NAME_TITLE + "," +
                 NoticeSchema.COLUMN_NAME_AUTHOR + "," +
-                NoticeSchema.COLUMN_NAME_FEED_ID + "," +
                 NoticeSchema.COLUMN_NAME_PUBLISHED +
                 " FROM " + NoticeSchema.TABLE_NAME,
                 null
