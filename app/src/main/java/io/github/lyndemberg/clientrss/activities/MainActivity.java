@@ -18,6 +18,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 
 import java.util.ArrayList;
 
@@ -40,7 +41,7 @@ public class MainActivity extends AppCompatActivity {
     private ArrayList<Notice> noticesList;
     private AlarmManager alarmManager;
     private PendingIntent pendingIntent;
-    private static final int INTERVAL_ALARM = 50*1000;
+    private static final int INTERVAL_ALARM = 300*1000;
 
     private FeedDbHelper feedDb;
 
@@ -87,7 +88,6 @@ public class MainActivity extends AppCompatActivity {
         //load notices cache in local database
         feedDb = new FeedDbHelper(this);
         noticesList = feedDb.getAllNotices();
-        Log.d(TAG_MAIN_ACTIVITY,"SIZE->"+noticesList.size());
         adapter = new NoticesAdapter(this, noticesList);
         listNews.setAdapter(adapter);
 
